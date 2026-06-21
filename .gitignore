@@ -10,7 +10,7 @@ __pycache__/
 .ipynb_checkpoints/
 
 # Local and generated project data
-data/
+/data/
 artifacts/
 reports/figures/
 
