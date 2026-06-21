@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+.ruff_cache/
+
+# Environments and tooling
+.venv/
+.idea/
+.vscode/
+.ipynb_checkpoints/
+
+# Local and generated project data
+data/
+artifacts/
+reports/figures/
+
+# Operating systems
+.DS_Store

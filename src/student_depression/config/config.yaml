@@ -1,0 +1,32 @@
+dataset:
+  url: https://www.kaggle.com/api/v1/datasets/download/hopesb/student-depression-dataset
+  target_column: Depression
+  identifier_columns:
+    - id
+
+split:
+  test_size: 0.2
+  random_state: 42
+
+feature_selection:
+  k: 20
+
+models:
+  logistic_regression:
+    enabled: true
+    parameters:
+      class_weight: balanced
+      max_iter: 1000
+
+  random_forest:
+    enabled: true
+    parameters:
+      class_weight: balanced
+      n_estimators: 300
+      n_jobs: -1
+
+  decision_tree:
+    enabled: true
+    parameters:
+      class_weight: balanced
+      max_depth: 12
