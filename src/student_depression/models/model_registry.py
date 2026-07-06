@@ -18,6 +18,7 @@ from xgboost import XGBClassifier
 
 from student_depression.config import SETTINGS
 from student_depression.config.loader import ModelSettings
+from student_depression.models.torch_mlp import TorchMLPClassifier
 from student_depression.preprocessing import (
     build_feature_selector,
     build_preprocessor,
@@ -37,6 +38,7 @@ MODEL_REGISTRY: dict[str, ModelFactory] = {
     "balanced_random_forest": BalancedRandomForestClassifier,
     "hist_gradient_boosting": HistGradientBoostingClassifier,
     "xgboost": XGBClassifier,
+    "mlp_pytorch": TorchMLPClassifier,
 }
 
 

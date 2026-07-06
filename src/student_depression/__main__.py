@@ -3,6 +3,7 @@
 from time import perf_counter
 
 import pandas as pd
+from sklearn.pipeline import Pipeline
 
 from student_depression.data import (
     ensure_dataset,
@@ -13,6 +14,32 @@ from student_depression.data import (
 from student_depression.evaluation import classification_metrics, select_threshold
 from student_depression.models import build_benchmark_pipelines
 from student_depression.utils import configure_logging
+
+
+def _fit_pipeline_with_optional_validation(
+    pipeline: Pipeline,
+    features_development: pd.DataFrame,
+    target_development: pd.Series,
+    features_validation: pd.DataFrame,
+    target_validation: pd.Series,
+) -> None:
+    """Fit sklearn pipelines, giving PyTorch models transformed validation data."""
+    final_estimator = pipeline.steps[-1][1]
+    if not getattr(final_estimator, "uses_validation_data", False):
+        pipeline.fit(features_development, target_development)
+        return
+
+    feature_pipeline = pipeline[:-1]
+    transformed_development = feature_pipeline.fit_transform(
+        features_development,
+        target_development,
+    )
+    transformed_validation = feature_pipeline.transform(features_validation)
+    final_estimator.fit(
+        transformed_development,
+        target_development,
+        validation_data=(transformed_validation, target_validation),
+    )
 
 
 def main() -> None:
@@ -43,7 +70,13 @@ def main() -> None:
     for model_name, pipeline in build_benchmark_pipelines().items():
         logger.info("Training %s", model_name)
         started_at = perf_counter()
-        pipeline.fit(features_development, target_development)
+        _fit_pipeline_with_optional_validation(
+            pipeline,
+            features_development,
+            target_development,
+            features_validation,
+            target_validation,
+        )
         elapsed_seconds = perf_counter() - started_at
 
         threshold, validation_metrics = select_threshold(

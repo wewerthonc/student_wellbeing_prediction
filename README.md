@@ -16,22 +16,39 @@ Install [uv](https://docs.astral.sh/uv/) and synchronize the locked environment:
 uv sync
 ```
 
-The first benchmark run downloads the public Kaggle dataset into the ignored `data/raw/` directory:
+The first benchmark run downloads the public Kaggle dataset into the ignored `data/raw/` directory
+and runs the selected experiment configuration described in the paper:
 
 ```bash
 uv run student-depression
 ```
 
-Models are enabled and parameterized in `config/config.yaml`. Every enabled model runs in one
-benchmark:
+Models are enabled and parameterized in `config/config.yaml`. The default configuration follows the
+paper protocol:
+
+- stratified development/validation/test split of 64%/16%/20% with `random_state=42`
+- median/mode imputation, `RobustScaler`, one-hot encoding with `min_frequency=10`
+- deterministic feature engineering and mutual-information feature selection inside each pipeline
+- threshold search from 0.10 to 0.90 on validation, optimizing F2 with F1 and balanced accuracy as
+  tie-breakers
+- final test reporting for the prevalence baseline, logistic regression, SGD logistic, decision tree,
+  Random Forest, Extra Trees, Balanced Random Forest, Hist Gradient Boosting, XGBoost, and PyTorch MLP
+
+The paper reports the selected hyperparameters but not the complete search grids. This repo therefore
+reproduces the selected-model evaluation path rather than reconstructing undocumented grid-search
+spaces. The default XGBoost and PyTorch MLP configs request CUDA to mirror the paper environment; set
+their `device` parameters to `cpu` in `config/config.yaml` when running on a machine without an NVIDIA
+GPU.
 
 ```yaml
 models:
-  logistic_regression:
+  mlp_pytorch:
     enabled: true
+    feature_selection_k: 40
     parameters:
-      class_weight: balanced
-      max_iter: 1000
+      hidden_layers: [128, 64]
+      dropout: [0.25, 0.20]
+      device: cuda
 ```
 
 Start the exploratory notebook environment with:
@@ -68,12 +85,12 @@ src/
         └── plots.py                 # Exploratory plots
 ```
 
-The benchmark currently configures logistic regression, random forest, and decision tree.
-`model_registry.py` maps their stable YAML names to sklearn factories, leaving one clear place to add
-future implementations. Every model uses an independent copy of the same feature engineering,
-imputation, encoding, scaling, and mutual-information feature-selection pipeline. The number of
-selected features is controlled by `feature_selection.k` in YAML. All models are evaluated on one
-shared holdout set, making their metrics directly comparable.
+The benchmark configures the selected model set from the paper. `model_registry.py` maps stable YAML
+names to sklearn, imbalanced-learn, XGBoost, and PyTorch factories. Every model uses an independent
+copy of the same feature engineering, imputation, encoding, scaling, and mutual-information
+feature-selection pipeline. The number of selected features can be set per model with
+`feature_selection_k`, falling back to `feature_selection.default_k`. All models are evaluated on the
+same validation and test splits, making their thresholded metrics directly comparable.
 
 ## Quality checks
 

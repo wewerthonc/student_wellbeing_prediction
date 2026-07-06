@@ -154,8 +154,7 @@ def load_settings(config_path: Path = CONFIG_FILE) -> ProjectSettings:
         threshold = payload["threshold"]
         models = payload["models"]
         if not all(
-            isinstance(section, dict)
-            for section in (preprocessing, feature_selection, threshold)
+            isinstance(section, dict) for section in (preprocessing, feature_selection, threshold)
         ):
             raise TypeError
         if not isinstance(models, dict):

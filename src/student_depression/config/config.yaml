@@ -110,3 +110,22 @@ models:
       reg_lambda: 0.5
       subsample: 0.9
       tree_method: hist
+
+  mlp_pytorch:
+    enabled: true
+    feature_selection_k: 40
+    parameters:
+      batch_size: 512
+      device: cuda
+      dropout:
+        - 0.25
+        - 0.20
+      early_stopping_patience: 18
+      hidden_layers:
+        - 128
+        - 64
+      learning_rate: 0.001
+      max_epochs: 100
+      scheduler_factor: 0.5
+      scheduler_patience: 5
+      weight_decay: 0.0001
