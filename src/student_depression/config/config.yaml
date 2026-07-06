@@ -1,0 +1,131 @@
+dataset:
+  url: https://www.kaggle.com/api/v1/datasets/download/hopesb/student-depression-dataset
+  target_column: Depression
+  identifier_columns:
+    - id
+
+split:
+  test_size: 0.2
+  validation_size: 0.16
+  random_state: 42
+  cv_folds: 5
+
+preprocessing:
+  categorical_min_frequency: 10
+
+feature_selection:
+  default_k: all
+
+threshold:
+  start: 0.10
+  stop: 0.90
+  step: 0.01
+  optimize: f2
+  tie_breakers:
+    - f1
+    - balanced_accuracy
+
+models:
+  prevalence:
+    enabled: true
+    parameters:
+      strategy: prior
+
+  logistic_regression:
+    enabled: true
+    feature_selection_k: 30
+    parameters:
+      C: 3.0
+      max_iter: 5000
+      penalty: l1
+      solver: liblinear
+
+  sgd_logistic:
+    enabled: true
+    feature_selection_k: all
+    parameters:
+      alpha: 0.0005
+      l1_ratio: 0.0
+      loss: log_loss
+      max_iter: 5000
+      penalty: elasticnet
+
+  random_forest:
+    enabled: true
+    feature_selection_k: all
+    parameters:
+      max_features: 0.5
+      min_samples_leaf: 2
+      n_estimators: 320
+      n_jobs: -1
+
+  decision_tree:
+    enabled: true
+    feature_selection_k: 20
+    parameters:
+      criterion: gini
+      max_depth: 7
+      min_samples_leaf: 50
+
+  extra_trees:
+    enabled: true
+    feature_selection_k: all
+    parameters:
+      max_depth: 14
+      max_features: 0.5
+      min_samples_leaf: 2
+      n_estimators: 360
+      n_jobs: -1
+
+  balanced_random_forest:
+    enabled: true
+    feature_selection_k: all
+    parameters:
+      max_depth: 14
+      max_features: 0.5
+      min_samples_leaf: 2
+      n_estimators: 320
+      n_jobs: -1
+
+  hist_gradient_boosting:
+    enabled: true
+    feature_selection_k: all
+    parameters:
+      l2_regularization: 0.05
+      learning_rate: 0.08
+      max_iter: 320
+      max_leaf_nodes: 15
+
+  xgboost:
+    enabled: true
+    feature_selection_k: all
+    parameters:
+      device: cuda
+      eval_metric: logloss
+      learning_rate: 0.04
+      max_depth: 5
+      n_estimators: 250
+      n_jobs: -1
+      objective: binary:logistic
+      reg_lambda: 0.5
+      subsample: 0.9
+      tree_method: hist
+
+  mlp_pytorch:
+    enabled: true
+    feature_selection_k: 40
+    parameters:
+      batch_size: 512
+      device: cuda
+      dropout:
+        - 0.25
+        - 0.20
+      early_stopping_patience: 18
+      hidden_layers:
+        - 128
+        - 64
+      learning_rate: 0.001
+      max_epochs: 100
+      scheduler_factor: 0.5
+      scheduler_patience: 5
+      weight_decay: 0.0001

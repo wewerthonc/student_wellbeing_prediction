@@ -7,21 +7,19 @@ def plotar_distribuicao_alvo(df, target_col="Depression"):
     plt.figure(figsize=(8, 4.8))
     dados_x = df[target_col].map({0: "Sem depressão", 1: "Com depressão"})
 
-    ax = sns.countplot(
-        x=dados_x,
-        hue=dados_x,
-        palette=["#2563eb", "#dc2626"],
-        legend=False
-    )
+    ax = sns.countplot(x=dados_x, hue=dados_x, palette=["#2563eb", "#dc2626"], legend=False)
     ax.set_title(f"Distribuição da Variável-Alvo ({target_col})")
     ax.set_xlabel("Classe")
     ax.set_ylabel("Quantidade")
 
     for p in ax.patches:
         value = int(p.get_height())
-        ax.annotate(f"{value}\n({value / len(df):.1%})",
-                    (p.get_x() + p.get_width() / 2, value),
-                    ha="center", va="bottom")
+        ax.annotate(
+            f"{value}\n({value / len(df):.1%})",
+            (p.get_x() + p.get_width() / 2, value),
+            ha="center",
+            va="bottom",
+        )
     plt.tight_layout()
     plt.show()
 
@@ -33,7 +31,13 @@ def plotar_dados_ausentes(df_raw):
 
     plt.figure(figsize=(8, 3.6))
     if len(missing) > 0:
-        ax = sns.barplot(x=missing.values, y=missing.index, hue=missing.index, palette="viridis", legend=False)
+        ax = sns.barplot(
+            x=missing.values,
+            y=missing.index,
+            hue=missing.index,
+            palette="viridis",
+            legend=False,
+        )
         ax.set_title("Dados Ausentes por Atributo Original")
 
         ax.set_xlabel("Quantidade")
@@ -51,8 +55,12 @@ def plotar_dados_ausentes(df_raw):
 def plotar_distribuicoes_numericas(df, target_col="Depression"):
     """Gera histogramas combinados das principais variáveis numéricas e derivadas."""
     cols_interesse = [
-        "Age", "Academic Pressure", "Financial Stress",
-        "Work/Study Hours", "Pressure Satisfaction Ratio", "Stress Academic Index"
+        "Age",
+        "Academic Pressure",
+        "Financial Stress",
+        "Work/Study Hours",
+        "Pressure Satisfaction Ratio",
+        "Stress Academic Index",
     ]
 
     plot_cols = [c for c in cols_interesse if c in df.columns]
@@ -64,7 +72,7 @@ def plotar_distribuicoes_numericas(df, target_col="Depression"):
     fig, axes = plt.subplots(2, 3, figsize=(14, 7))
     axes = axes.ravel()
 
-    for ax, col in zip(axes, plot_cols):
+    for ax, col in zip(axes, plot_cols, strict=False):
         sns.histplot(
             data=df,
             x=col,
@@ -72,12 +80,12 @@ def plotar_distribuicoes_numericas(df, target_col="Depression"):
             bins=24,
             multiple="stack",
             palette=["#2563eb", "#dc2626"],
-            ax=ax
+            ax=ax,
         )
         ax.set_title(col)
         ax.set_xlabel("")
 
-    for ax in axes[len(plot_cols):]:
+    for ax in axes[len(plot_cols) :]:
         ax.axis("off")
 
     fig.suptitle("Distribuições Numéricas e Features Derivadas", y=1.02)
@@ -100,8 +108,11 @@ def plotar_matriz_correlacao(df):
 def plotar_taxas_categoricas(df, target_col="Depression"):
     """Gera gráficos de barra horizontal com a taxa da classe positiva por categoria."""
     cols_interesse = [
-        "Gender", "Sleep Duration", "Dietary Habits",
-        "Have you ever had suicidal thoughts ?", "Family History of Mental Illness"
+        "Gender",
+        "Sleep Duration",
+        "Dietary Habits",
+        "Have you ever had suicidal thoughts ?",
+        "Family History of Mental Illness",
     ]
 
     plot_cols = [c for c in cols_interesse if c in df.columns]
@@ -115,16 +126,11 @@ def plotar_taxas_categoricas(df, target_col="Depression"):
     if len(plot_cols) == 1:
         axes = [axes]
 
-    for ax, col in zip(axes, plot_cols):
+    for ax, col in zip(axes, plot_cols, strict=False):
         rates = df.groupby(col)[target_col].mean().sort_values(ascending=False)
 
         sns.barplot(
-            x=rates.values,
-            y=rates.index,
-            hue=rates.index,
-            palette="viridis",
-            legend=False,
-            ax=ax
+            x=rates.values, y=rates.index, hue=rates.index, palette="viridis", legend=False, ax=ax
         )
 
         ax.set_xlim(0, 1)
