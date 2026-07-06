@@ -43,6 +43,17 @@ class FeatureSelectionSettings:
 
 
 @dataclass(frozen=True, slots=True)
+class ThresholdSettings:
+    """Validation threshold-search settings."""
+
+    start: float
+    stop: float
+    step: float
+    optimize: str
+    tie_breakers: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class ModelSettings:
     """Configuration for one benchmark model."""
 
@@ -60,6 +71,7 @@ class ProjectSettings:
     split: SplitSettings
     preprocessing: PreprocessingSettings
     feature_selection: FeatureSelectionSettings
+    threshold: ThresholdSettings
     models: tuple[ModelSettings, ...]
 
 
@@ -104,6 +116,33 @@ def _parse_categorical_min_frequency(value: Any) -> int | float | None:
     return min_frequency
 
 
+def _parse_threshold_metrics(primary: Any, tie_breakers: Any) -> tuple[str, tuple[str, ...]]:
+    valid_metrics = {
+        "accuracy",
+        "balanced_accuracy",
+        "precision",
+        "recall",
+        "specificity",
+        "negative_predictive_value",
+        "f1",
+        "f2",
+        "roc_auc",
+        "average_precision",
+        "mcc",
+        "cohen_kappa",
+        "brier_loss",
+    }
+    optimize = str(primary)
+    if optimize not in valid_metrics:
+        raise ValueError
+    if not isinstance(tie_breakers, list | tuple):
+        raise ValueError
+    parsed_tie_breakers = tuple(str(metric) for metric in tie_breakers)
+    if not set(parsed_tie_breakers).issubset(valid_metrics):
+        raise ValueError
+    return optimize, parsed_tie_breakers
+
+
 def load_settings(config_path: Path = CONFIG_FILE) -> ProjectSettings:
     """Load and validate project settings from a YAML file."""
     payload = _read_yaml(config_path)
@@ -112,13 +151,21 @@ def load_settings(config_path: Path = CONFIG_FILE) -> ProjectSettings:
         split = payload["split"]
         preprocessing = payload["preprocessing"]
         feature_selection = payload["feature_selection"]
+        threshold = payload["threshold"]
         models = payload["models"]
-        if not isinstance(preprocessing, dict) or not isinstance(feature_selection, dict):
+        if not all(
+            isinstance(section, dict)
+            for section in (preprocessing, feature_selection, threshold)
+        ):
             raise TypeError
         if not isinstance(models, dict):
             raise TypeError
 
         default_k = feature_selection.get("default_k", feature_selection.get("k"))
+        optimize_metric, tie_breakers = _parse_threshold_metrics(
+            threshold["optimize"],
+            threshold["tie_breakers"],
+        )
 
         model_settings = []
         for name, configuration in models.items():
@@ -158,6 +205,13 @@ def load_settings(config_path: Path = CONFIG_FILE) -> ProjectSettings:
             feature_selection=FeatureSelectionSettings(
                 default_k=_parse_feature_selection_k(default_k)
             ),
+            threshold=ThresholdSettings(
+                start=float(threshold["start"]),
+                stop=float(threshold["stop"]),
+                step=float(threshold["step"]),
+                optimize=optimize_metric,
+                tie_breakers=tie_breakers,
+            ),
             models=tuple(model_settings),
         )
     except (KeyError, TypeError, ValueError) as error:
@@ -175,6 +229,18 @@ def load_settings(config_path: Path = CONFIG_FILE) -> ProjectSettings:
         raise ValueError(message)
     if settings.split.cv_folds < 2:
         message = "split.cv_folds must be at least 2"
+        raise ValueError(message)
+    if not 0 <= settings.threshold.start <= 1:
+        message = "threshold.start must be between 0 and 1"
+        raise ValueError(message)
+    if not 0 <= settings.threshold.stop <= 1:
+        message = "threshold.stop must be between 0 and 1"
+        raise ValueError(message)
+    if settings.threshold.start > settings.threshold.stop:
+        message = "threshold.start must be less than or equal to threshold.stop"
+        raise ValueError(message)
+    if settings.threshold.step <= 0:
+        message = "threshold.step must be positive"
         raise ValueError(message)
     if not any(model.enabled for model in settings.models):
         message = "At least one benchmark model must be enabled"

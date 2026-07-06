@@ -2,12 +2,19 @@
 
 from collections.abc import Callable
 
+from imblearn.ensemble import BalancedRandomForestClassifier
 from sklearn.base import ClassifierMixin
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
+from sklearn.dummy import DummyClassifier
+from sklearn.ensemble import (
+    ExtraTreesClassifier,
+    HistGradientBoostingClassifier,
+    RandomForestClassifier,
+)
+from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.tree import DecisionTreeClassifier
+from xgboost import XGBClassifier
 
 from student_depression.config import SETTINGS
 from student_depression.config.loader import ModelSettings
@@ -21,9 +28,15 @@ ModelFactory = Callable[..., ClassifierMixin]
 
 # YAML refers to these stable names instead of importing arbitrary Python objects.
 MODEL_REGISTRY: dict[str, ModelFactory] = {
+    "prevalence": DummyClassifier,
     "logistic_regression": LogisticRegression,
+    "sgd_logistic": SGDClassifier,
     "random_forest": RandomForestClassifier,
     "decision_tree": DecisionTreeClassifier,
+    "extra_trees": ExtraTreesClassifier,
+    "balanced_random_forest": BalancedRandomForestClassifier,
+    "hist_gradient_boosting": HistGradientBoostingClassifier,
+    "xgboost": XGBClassifier,
 }
 
 
