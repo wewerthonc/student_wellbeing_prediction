@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 
 class _BinaryMLP(nn.Module):
-    """Compact feed-forward network used in the paper."""
+    """Compact feed-forward network used for the MLP benchmark."""
 
     def __init__(self, input_features: int, hidden_layers: Sequence[int], dropout: Sequence[float]):
         super().__init__()

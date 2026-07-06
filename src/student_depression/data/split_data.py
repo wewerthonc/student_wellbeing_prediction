@@ -55,7 +55,7 @@ def split_development_validation_test(
     validation_size: float = SETTINGS.split.validation_size,
     random_state: int = SETTINGS.split.random_state,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.Series, pd.Series, pd.Series]:
-    """Create the paper's stratified 64/16/20 development/validation/test split."""
+    """Create the stratified 64/16/20 development/validation/test split."""
     if not 0 < test_size < 1:
         message = f"test_size must be between 0 and 1, received {test_size}"
         raise ValueError(message)

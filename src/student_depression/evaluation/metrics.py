@@ -27,7 +27,7 @@ def threshold_grid(
     stop: float = SETTINGS.threshold.stop,
     step: float = SETTINGS.threshold.step,
 ) -> np.ndarray:
-    """Return the inclusive validation-threshold grid configured by the paper."""
+    """Return the inclusive validation-threshold grid."""
     if step <= 0:
         message = f"Threshold step must be positive, received {step}"
         raise ValueError(message)

@@ -17,14 +17,14 @@ uv sync
 ```
 
 The first benchmark run downloads the public Kaggle dataset into the ignored `data/raw/` directory
-and runs the selected experiment configuration described in the paper:
+and runs the selected experiment configuration:
 
 ```bash
 uv run student-depression
 ```
 
 Models are enabled and parameterized in `config/config.yaml`. The default configuration follows the
-paper protocol:
+experiment protocol:
 
 - stratified development/validation/test split of 64%/16%/20% with `random_state=42`
 - median/mode imputation, `RobustScaler`, one-hot encoding with `min_frequency=10`
@@ -34,11 +34,6 @@ paper protocol:
 - final test reporting for the prevalence baseline, logistic regression, SGD logistic, decision tree,
   Random Forest, Extra Trees, Balanced Random Forest, Hist Gradient Boosting, XGBoost, and PyTorch MLP
 
-The paper reports the selected hyperparameters but not the complete search grids. This repo therefore
-reproduces the selected-model evaluation path rather than reconstructing undocumented grid-search
-spaces. The default XGBoost and PyTorch MLP configs request CUDA to mirror the paper environment; set
-their `device` parameters to `cpu` in `config/config.yaml` when running on a machine without an NVIDIA
-GPU.
 
 ```yaml
 models:
@@ -85,7 +80,7 @@ src/
         └── plots.py                 # Exploratory plots
 ```
 
-The benchmark configures the selected model set from the paper. `model_registry.py` maps stable YAML
+The benchmark configures the selected experiment model set. `model_registry.py` maps stable YAML
 names to sklearn, imbalanced-learn, XGBoost, and PyTorch factories. Every model uses an independent
 copy of the same feature engineering, imputation, encoding, scaling, and mutual-information
 feature-selection pipeline. The number of selected features can be set per model with

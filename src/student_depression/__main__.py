@@ -50,7 +50,6 @@ def main() -> None:
     data = load_dataset(data_path)
     features, target = split_features_target(data)
 
-    # The paper keeps validation separate for threshold choice and test for final reporting.
     (
         features_development,
         features_validation,
@@ -94,7 +93,7 @@ def main() -> None:
             }
         )
 
-    # F2 is the paper's threshold-selection objective; the full table keeps tradeoffs visible.
+    # F2 is the threshold-selection objective; the full table keeps tradeoffs visible.
     benchmark = pd.DataFrame(results).set_index("model").sort_values("f2", ascending=False)
     logger.info("Benchmark results:\n%s", benchmark.round(3).to_string())
 
