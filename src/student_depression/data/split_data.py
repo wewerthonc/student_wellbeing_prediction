@@ -46,3 +46,48 @@ def split_train_test(
         random_state=random_state,
         stratify=target,
     )
+
+
+def split_development_validation_test(
+    features: pd.DataFrame,
+    target: pd.Series,
+    test_size: float = SETTINGS.split.test_size,
+    validation_size: float = SETTINGS.split.validation_size,
+    random_state: int = SETTINGS.split.random_state,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.Series, pd.Series, pd.Series]:
+    """Create the paper's stratified 64/16/20 development/validation/test split."""
+    if not 0 < test_size < 1:
+        message = f"test_size must be between 0 and 1, received {test_size}"
+        raise ValueError(message)
+    if not 0 < validation_size < 1:
+        message = f"validation_size must be between 0 and 1, received {validation_size}"
+        raise ValueError(message)
+    if test_size + validation_size >= 1:
+        message = "test_size and validation_size must leave development data"
+        raise ValueError(message)
+
+    features_train, features_test, target_train, target_test = train_test_split(
+        features,
+        target,
+        test_size=test_size,
+        random_state=random_state,
+        stratify=target,
+    )
+    validation_fraction_of_train = validation_size / (1.0 - test_size)
+    features_development, features_validation, target_development, target_validation = (
+        train_test_split(
+            features_train,
+            target_train,
+            test_size=validation_fraction_of_train,
+            random_state=random_state,
+            stratify=target_train,
+        )
+    )
+    return (
+        features_development,
+        features_validation,
+        features_test,
+        target_development,
+        target_validation,
+        target_test,
+    )

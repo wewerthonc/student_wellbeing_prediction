@@ -5,7 +5,9 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.preprocessing import OneHotEncoder, RobustScaler
+
+from student_depression.config import SETTINGS
 
 REQUIRED_ENGINEERING_COLUMNS = {
     "Academic Pressure",
@@ -72,19 +74,30 @@ def engineer_features(dataframe: pd.DataFrame) -> pd.DataFrame:
     return data
 
 
-def build_preprocessor() -> ColumnTransformer:
+def build_preprocessor(
+    categorical_min_frequency: int | float | None = (
+        SETTINGS.preprocessing.categorical_min_frequency
+    ),
+) -> ColumnTransformer:
     """Build dtype-aware numerical and categorical preprocessing."""
     numerical = Pipeline(
         steps=[
             ("imputer", SimpleImputer(strategy="median")),
-            ("scaler", StandardScaler()),
+            ("scaler", RobustScaler()),
         ]
     )
     categorical = Pipeline(
         steps=[
             ("imputer", SimpleImputer(strategy="most_frequent")),
             # Mutual information must inspect continuous and encoded values together.
-            ("encoder", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
+            (
+                "encoder",
+                OneHotEncoder(
+                    handle_unknown="ignore",
+                    min_frequency=categorical_min_frequency,
+                    sparse_output=False,
+                ),
+            ),
         ]
     )
     return ColumnTransformer(

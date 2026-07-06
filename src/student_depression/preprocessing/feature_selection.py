@@ -8,11 +8,11 @@ from student_depression.config import SETTINGS
 
 
 def build_feature_selector(
-    k: int = SETTINGS.feature_selection.k,
+    k: int | str = SETTINGS.feature_selection.default_k,
     random_state: int = SETTINGS.split.random_state,
 ) -> SelectKBest:
     """Select the k transformed features with the most target information."""
-    if k < 1:
+    if k != "all" and int(k) < 1:
         message = f"The number of selected features must be positive: {k}"
         raise ValueError(message)
 

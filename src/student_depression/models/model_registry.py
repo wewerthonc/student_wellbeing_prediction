@@ -46,6 +46,7 @@ def create_model(settings: ModelSettings) -> ClassifierMixin:
 
 def build_model_pipeline(settings: ModelSettings) -> Pipeline:
     """Wrap one classifier in the shared feature and preprocessing pipeline."""
+    feature_selection_k = settings.feature_selection_k or SETTINGS.feature_selection.default_k
     return Pipeline(
         steps=[
             (
@@ -53,7 +54,7 @@ def build_model_pipeline(settings: ModelSettings) -> Pipeline:
                 FunctionTransformer(engineer_features, validate=False),
             ),
             ("preprocessing", build_preprocessor()),
-            ("feature_selection", build_feature_selector()),
+            ("feature_selection", build_feature_selector(k=feature_selection_k)),
             ("model", create_model(settings)),
         ]
     )
